@@ -121,10 +121,11 @@ noise; (iii)~HTTP transmission carries no transport-layer encryption;
 and (iv)~the cloud subscription incurs recurring licensing cost around
 a closed dashboard.
 
-\begin{table}[!ht]
+\begin{table}[!htb]
 \caption{Baseline vs.\ enhanced platform (component-level comparison).}\label{tab:compare}
 \centering
-\begin{tabular}{@{}lll@{}}
+\small
+\begin{tabular}{@{}p{2.8cm}p{4.2cm}p{4.6cm}@{}}
 \toprule
 \textbf{Feature} & \textbf{Baseline~\cite{gupta2020}} & \textbf{This work}\\
 \midrule
@@ -134,7 +135,7 @@ Cloud platform       & iotgecko.com (proprietary) & ThingsBoard (open-source)\\
 Transport             & HTTP (unencrypted)     & MQTT\footnotemark[1]\\
 Power source          & 12\,V DC adapter       & Li-ion battery ($\sim$8\,h)\\
 BP sensing             & Wrist cuff              & Clinical arm cuff\footnotemark[2]\\
-\botrule
+\bottomrule
 \end{tabular}
 \footnotetext[1]{The demonstrated prototype uses the MQTT broker's
   default unencrypted listener for development; TLS on the broker's
@@ -163,7 +164,7 @@ interaction (DS18B20 data line on GPIO4; keypad keys~1--4 on GPIO27,
 GPIO26, GPIO12, and GPIO14; LCD at I\textsuperscript{2}C address
 0x27).
 
-\begin{figure}[!ht]
+\begin{figure}[!htbp]
 \centering
 \resizebox{0.98\linewidth}{!}{%
 \begin{tikzpicture}[
@@ -196,13 +197,6 @@ publishes MQTT telemetry to ThingsBoard; the cloud dashboard is
 consumed by clinicians and patients.}\label{fig:arch}
 \end{figure}
 
-\begin{figure}[!ht]
-\centering
-\includegraphics[width=0.6\linewidth]{images/fig-prototype.jpg}
-\caption{Assembled prototype: LCD, keypad, ESP32, DS18B20 ambient
-temperature probe, and MAX30102 pulse-oximeter sensor.}\label{fig:prototype}
-\end{figure}
-
 \subsection{Firmware Architecture}
 
 The firmware implements a menu-driven state machine, shown live on
@@ -220,7 +214,14 @@ the on-screen countdown animation, rather than blocking on a fixed
 JSON payload from the most recent readings and publishes it to the
 cloud (Sect.~\ref{sec:mqtt}).
 
-\begin{figure}[!ht]
+\begin{figure}[!htbp]
+\centering
+\includegraphics[width=0.6\linewidth]{images/fig-prototype.jpg}
+\caption{Assembled prototype: LCD, keypad, ESP32, DS18B20 ambient
+temperature probe, and MAX30102 pulse-oximeter sensor.}\label{fig:prototype}
+\end{figure}
+
+\begin{figure}[!htbp]
 \centering
 \begin{minipage}{0.32\linewidth}
 \centering
@@ -242,6 +243,7 @@ patient login, (b) non-blocking SpO\textsubscript{2} measurement in
 progress, (c) SpO\textsubscript{2} result screen.}\label{fig:menu}
 \end{figure}
 
+\noindent\begin{minipage}{\linewidth}
 Wi-Fi and MQTT broker credentials are configured at startup (Listing
 1); the device token and network credentials shown here are
 anonymised.
@@ -257,6 +259,7 @@ const int   mqtt_port      = 1883;
 const char* mqtt_client_id = "ESP32_Client";
 const char* mqtt_username  = "ANONYMIZED_DEVICE_TOKEN"; // ThingsBoard device token
 \end{lstlisting}
+\end{minipage}\medskip
 
 %%-----------------------------------------------------------------%%
 \section{Cloud Connectivity and MQTT Implementation}\label{sec:mqtt}
@@ -298,7 +301,7 @@ cloud service. Figure~\ref{fig:dashboard} shows the resulting
 dashboard, with live SpO\textsubscript{2}, heart-rate, and temperature
 widgets and a rolling line chart.
 
-\begin{figure}[!ht]
+\begin{figure}[!htbp]
 \centering
 \includegraphics[width=0.8\linewidth]{images/fig-dashboard.png}
 \caption{ThingsBoard patient-monitoring dashboard: live vital-sign
@@ -327,7 +330,7 @@ Sect.~\ref{sec:mobile}):
 \footnotesize\texttt{medmonitor/patient01/spo2},\ \texttt{medmonitor/patient01/hr},\ \texttt{medmonitor/patient01/temp}
 \end{center}
 
-\begin{figure}[!ht]
+\begin{figure}[!htbp]
 \centering
 \resizebox{0.98\linewidth}{!}{%
 \begin{tikzpicture}[
@@ -362,6 +365,13 @@ per-vital topics on a HiveMQ broker, subscribed to by the mobile app.}\label{fig
 %%-----------------------------------------------------------------%%
 \section{Mobile Application}\label{sec:mobile}
 
+\begin{figure}[!ht]
+\centering
+\includegraphics[width=0.38\linewidth]{images/fig-android-app.jpg}
+\caption{Android application interface: vital-sign cards and a
+30-minute history chart, captured live during a test session.}\label{fig:androidapp}
+\end{figure}
+
 An Android companion application is under development as the primary
 patient/clinician interface (Fig.~\ref{fig:androidapp}). Planned
 features are: real-time vital-sign cards, a rolling historical chart,
@@ -373,13 +383,6 @@ The application subscribes to the per-vital HiveMQ topics of
 Fig.~\ref{fig:hivemq-arch}; during development, the broker's web
 console confirmed three active topic subscriptions corresponding to
 the SpO\textsubscript{2}, heart-rate, and temperature topics.
-
-\begin{figure}[!ht]
-\centering
-\includegraphics[width=0.38\linewidth]{images/fig-android-app.jpg}
-\caption{Android application interface: vital-sign cards and a
-30-minute history chart, captured live during a test session.}\label{fig:androidapp}
-\end{figure}
 
 %%-----------------------------------------------------------------%%
 \section{Discussion}\label{sec:discussion}
@@ -412,9 +415,16 @@ reference vital-signs monitor at partner hospitals; (ii)~TLS-secured
 production MQTT deployment (broker port 8883) with the same
 token-based device authentication; (iii)~blood-pressure module
 integration (HX711 load-cell front end) to complete the sensor set;
-(iv)~portable ECG integration (AD8232
-module); (v)~non-invasive glucose monitoring; (vi)~edge machine
-learning for on-device anomaly detection; and (vii)~a voice
+(iv)~portable ECG integration (AD8232 module); (v)~non-invasive
+glucose monitoring; (vi)~predictive machine-learning models trained
+on longitudinal vital-sign data to forecast patient-specific
+health-risk trajectories, extending the current threshold-based
+anomaly detection; (vii)~additional physiological and environmental
+sensors (e.g., accelerometer-based activity/fall detection and
+ambient humidity) to broaden the monitored parameter set;
+(viii)~migration from the current breadboard prototype to a custom
+printed-circuit board, reducing per-unit cost and power consumption
+for a battery-optimised, mass-producible device; and (ix)~a voice
 interface.
 
 %%-----------------------------------------------------------------%%
@@ -474,16 +484,19 @@ ThingsBoard~Inc.: ThingsBoard Community Edition Documentation.
 \url{https://thingsboard.io/docs/}
 
 \bibitem{espressif}
-Espressif Systems: ESP32 Series Datasheet.
-Espressif Systems, Shanghai.
+Espressif Systems: ESP32-WROOM-32D Datasheet.
+Espressif Systems, Shanghai (2023).
+\url{https://www.espressif.com/sites/default/files/documentation/esp32-wroom-32d_esp32-wroom-32u_datasheet_en.pdf}
 
 \bibitem{max30102ds}
 Analog Devices (Maxim Integrated): MAX30102 High-Sensitivity Pulse
-Oximeter and Heart-Rate Sensor Datasheet.
+Oximeter and Heart-Rate Sensor Datasheet (Rev.\ 1, 2018).
+\url{https://www.analog.com/media/en/technical-documentation/data-sheets/max30102.pdf}
 
 \bibitem{ds18b20ds}
 Analog Devices (Maxim Integrated): DS18B20 Programmable Resolution
-1-Wire Digital Thermometer Datasheet.
+1-Wire Digital Thermometer Datasheet (2019).
+\url{https://www.analog.com/media/en/technical-documentation/data-sheets/ds18b20.pdf}
 
 \bibitem{mqtt311}
 OASIS: MQTT Version 3.1.1 Specification. OASIS Standard (2014).
