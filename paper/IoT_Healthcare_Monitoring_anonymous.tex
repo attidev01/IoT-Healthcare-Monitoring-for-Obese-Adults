@@ -128,7 +128,7 @@ closed dashboard.
 \begin{table}[!htb]
 \caption{Baseline vs.\ enhanced platform (component-level comparison).}\label{tab:compare}
 \centering
-\small
+\tiny
 \begin{tabular}{@{}p{2.8cm}p{4.2cm}p{4.6cm}@{}}
 \toprule
 \textbf{Feature} & \textbf{Baseline~\cite{gupta2020}} & \textbf{This work}\\
@@ -137,7 +137,7 @@ Microcontroller     & Arduino ATmega328 + ESP8266 Wi-Fi module (two chips) & ESP
 Temperature sensor   & LM35 ($\pm0.75\,^\circ$C) & DS18B20 ($\pm0.1\,^\circ$C)\\
 Cloud platform       & iotgecko.com (proprietary) & ThingsBoard (open-source)\\
 Transport             & HTTP     & MQTT\footnotemark[1]\\
-Power source          & 12\,V DC adapter       & Li-ion battery ($\sim$8\,h)\\
+Power source          & 12\,V DC adapter       & Li-ion battery / 12\,V DC adapter\\
 BP sensing             & Wrist cuff              & Clinical arm cuff\footnotemark[2]\\
 \bottomrule
 \end{tabular}
@@ -466,10 +466,10 @@ future work.
 
 \backmatter
 
-\clearpage
 \section*{Declarations}
 
 \begin{itemize}
+\footnotesize
 \item Funding: Not applicable.
 \item Conflict of interest/Competing interests: The authors declare
   no competing interests.
@@ -489,6 +489,7 @@ future work.
 
 %%-----------------------------------------------------------------%%
 \begin{thebibliography}{7}
+\footnotesize
 
 \bibitem{gupta2020}
 Gupta,~D., Parikh,~A., Swarnalatha,~R.:
