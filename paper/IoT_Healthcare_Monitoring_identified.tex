@@ -7,6 +7,7 @@
 \usetikzlibrary{arrows.meta,positioning}
 \usepackage{xcolor}
 \usepackage{listings}
+\usepackage{placeins}
 
 \setlength{\textfloatsep}{8pt plus 2pt minus 2pt}
 \setlength{\intextsep}{6pt plus 2pt minus 2pt}
@@ -163,12 +164,16 @@ BP sensing             & Wrist cuff              & Clinical arm cuff\footnotemar
 \subsection{Hardware Architecture}
 
 Figure~\ref{fig:arch} shows the end-to-end data path. The
-microcontroller is an ESP32-WROOM-32D development board (dual-core
-Xtensa LX6, integrated Wi-Fi/BLE), replacing the Arduino ATmega328 and
-its external wireless module. Ambient temperature is sampled by a
-DS18B20 waterproof digital probe over a 1-Wire bus, removing the ADC
-quantisation noise of the baseline's analogue LM35 chain. SpO\textsubscript{2}
-and heart rate are sampled by a MAX30102 pulse-oximeter module over
+microcontroller is an ESP32-WROOM-32D development board~\cite{espressif}
+(dual-core Xtensa LX6, integrated Wi-Fi/BLE), replacing the Arduino
+ATmega328 and its external wireless module. Ambient
+temperature\footnote{Environmental, not core-body, temperature;
+tracked as a heat-stress indicator given obese adults' reduced
+heat-dissipation capacity.} is sampled by a DS18B20 waterproof
+digital probe~\cite{ds18b20ds} over a 1-Wire bus, removing the ADC
+quantisation noise of the baseline's analogue LM35 chain.
+SpO\textsubscript{2} and heart rate are sampled
+by a MAX30102 pulse-oximeter module~\cite{max30102ds} over
 I\textsuperscript{2}C, accessed through a MAX30100-compatible
 pulse-oximeter driver library. A four-button matrix keypad and a
 20$\times$4 character I\textsuperscript{2}C LCD provide local patient
@@ -322,10 +327,10 @@ widgets and a rolling 15-minute line chart.}\label{fig:dashboard}
 
 \subsection{Why MQTT}
 
-MQTT's fixed binary header (as small as 2 bytes) is an order of
-magnitude smaller than HTTP's textual headers, and its
-publish/subscribe model avoids the round-trip overhead of
-polling-based protocols~\cite{mqtt311}. Quality-of-Service level 1
+MQTT's fixed binary header introduces significantly less protocol
+overhead than HTTP's textual header structure, and its
+publish/subscribe model eliminates the polling round-trip required
+by request-based protocols~\cite{mqtt311}. Quality-of-Service level 1
 (``at least once'') is used for telemetry publishing, giving
 guaranteed delivery without the duplicate-suppression overhead of
 level 2.
@@ -380,25 +385,28 @@ by the web dashboard (Fig.~\ref{fig:arch}).}\label{fig:hivemq-arch}
 %%-----------------------------------------------------------------%%
 \section{Mobile Application}\label{sec:mobile}
 
-\begin{figure}[!ht]
+\begin{figure}[!htb]
 \centering
-\includegraphics[width=0.38\linewidth]{images/fig-android-app.jpg}
+\includegraphics[width=0.26\linewidth]{images/fig-android-app.jpg}
 \caption{Android application interface: vital-sign cards and a
 30-minute history chart, captured live during a test session.}\label{fig:androidapp}
 \end{figure}
 
-An Android companion application is under development as the primary
-patient/clinician interface (Fig.~\ref{fig:androidapp}). Planned
-features are: real-time vital-sign cards, a rolling historical chart,
-threshold-based colour-coded alerts
-(SpO\textsubscript{2}${}<{}$90\,\%, heart rate${}>{}$100\,bpm,
-ambient temperature${}>{}$38\,$^\circ$C), and multi-patient profile
-switching.
-The application subscribes to the per-vital HiveMQ topics of
-Fig.~\ref{fig:hivemq-arch}; during development, the broker's web
-console confirmed three active topic subscriptions corresponding to
-the SpO\textsubscript{2}, heart-rate, and temperature topics.
+An Android companion application serves as the primary
+patient/clinician interface (Fig.~\ref{fig:androidapp}). The
+application subscribes to the per-vital HiveMQ topics of
+Fig.~\ref{fig:hivemq-arch} and presents real-time vital-sign cards
+for SpO\textsubscript{2}, heart rate, and ambient temperature,
+together with a rolling 30-minute history chart. Threshold-based
+colour-coded alerts are triggered when SpO\textsubscript{2} drops
+below 90\,\%, heart rate exceeds 100\,bpm, or ambient temperature
+exceeds 38\,$^\circ$C. During testing, the broker's web console
+confirmed three active topic subscriptions corresponding to the
+SpO\textsubscript{2}, heart-rate, and temperature channels.
+Multi-patient profile switching is retained as a planned extension
+for a subsequent release.
 
+\FloatBarrier
 %%-----------------------------------------------------------------%%
 \section{Discussion}\label{sec:discussion}
 
@@ -498,8 +506,9 @@ future work.
 \end{itemize}
 
 %%-----------------------------------------------------------------%%
+\vspace{-8pt}
 \begin{thebibliography}{7}
-\footnotesize
+\tiny
 
 \bibitem{gupta2020}
 Gupta,~D., Parikh,~A., Swarnalatha,~R.:
