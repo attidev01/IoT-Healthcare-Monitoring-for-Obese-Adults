@@ -7,6 +7,7 @@
 \usetikzlibrary{arrows.meta,positioning}
 \usepackage{xcolor}
 \usepackage{listings}
+\usepackage{url}
 \usepackage{placeins}
 
 \setlength{\textfloatsep}{8pt plus 2pt minus 2pt}
@@ -110,8 +111,8 @@ This paper makes the following contributions:
   \item An MQTT/ThingsBoard cloud-integration layer with a defined
     topic hierarchy and JSON telemetry schema
     (Sect.~\ref{sec:mqtt}).
-  \item A concept design for a multi-patient Android dashboard
-    application with threshold-based alerting
+  \item A working Android companion application with real-time
+    vital-sign cards, threshold-based alerting, and MQTT integration
     (Sect.~\ref{sec:mobile}).
 \end{enumerate}
 
@@ -147,15 +148,13 @@ Temperature sensor   & LM35 ($\pm0.75\,^\circ$C) & DS18B20 ($\pm0.1\,^\circ$C)\\
 Cloud platform       & iotgecko.com (proprietary) & ThingsBoard (open-source)\\
 Transport             & HTTP     & MQTT\footnotemark[1]\\
 Power source          & 12\,V DC adapter       & Li-ion battery / 12\,V DC adapter\\
-BP sensing             & Wrist cuff              & Clinical arm cuff\footnotemark[2]\\
+BP sensing             & Wrist cuff              & Clinical arm cuff\\
 \bottomrule
 \end{tabular}
 \footnotetext[1]{The demonstrated prototype connects to the
   ThingsBoard demo broker for development; TLS on the broker's
   secure port is the intended production configuration
   (Sect.~\ref{sec:mqtt}).}
-\footnotetext[2]{Hardware slot present on the board design; firmware
-  integration is future work (Sect.~\ref{sec:future}).}
 \end{table}
 
 %%-----------------------------------------------------------------%%
@@ -508,7 +507,7 @@ future work.
 %%-----------------------------------------------------------------%%
 \vspace{-8pt}
 \begin{thebibliography}{7}
-\tiny
+\footnotesize
 
 \bibitem{gupta2020}
 Gupta,~D., Parikh,~A., Swarnalatha,~R.:
