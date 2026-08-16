@@ -1,6 +1,6 @@
 
-// IoT Module IAE MAster Project
-// Group: Lahcen Atti, Mouhamed Dib, Nacer Boubkraoui
+// IoT 
+// Lahcen Atti, Mouhamed Dib, Nacer Boubkraoui, Saber
 #include <Wire.h>
 #include <LiquidCrystal_I2C.h>
 #include <ezButton.h>

@@ -53,8 +53,9 @@ microcontroller behind a patient-authenticated on-device menu,
 publishing telemetry over MQTT to a ThingsBoard cloud dashboard.
 Relative to the baseline platform, the system improves
 ambient-temperature sensing accuracy ($\pm0.1\,^\circ$C vs.\
-$\pm0.5\,^\circ$C), replaces an 8-bit microcontroller and unencrypted
-HTTP transport with a Wi-Fi-capable ESP32 and MQTT, and moves from a
+$\pm0.75\,^\circ$C), replaces the baseline's separate 8-bit
+microcontroller and Wi-Fi module with a single Wi-Fi-capable ESP32
+running MQTT in place of HTTP, and moves from a
 proprietary paid cloud subscription to an open-source dashboard. A
 companion Android application concept for multi-patient dashboards
 and threshold-based alerting is also described. This paper reports
@@ -71,11 +72,11 @@ identified as future work.}
 
 Obesity affects over 650 million adults worldwide and increases the
 risk of cardiovascular and metabolic complications~\cite{who2023}.
-Continuous monitoring of vital signs -- blood-oxygen saturation
-(SpO\textsubscript{2}) and heart rate -- together with ambient
-temperature logging can support early detection of complications, but
-commercial remote patient monitoring (RPM) devices remain
-cost-prohibitive for many deployments. This paper
+Continuous monitoring of vital signs, including blood-oxygen
+saturation (SpO\textsubscript{2}) and heart rate, together with
+ambient temperature logging, can support early detection of
+complications, but commercial remote patient monitoring (RPM)
+devices remain cost-prohibitive for many deployments. This paper
 presents a low-cost IoT-based monitoring prototype for obese adults
 that builds on the platform proposed by Gupta et
 al.~\cite{gupta2020}. Relative to that baseline, four improvements are
@@ -83,8 +84,8 @@ targeted:
 
 \begin{itemize}
   \item higher-accuracy digital temperature sensing
-    ($\pm0.1\,^\circ$C vs.\ $\pm0.5\,^\circ$C);
-  \item MQTT-based telemetry in place of unencrypted HTTP polling;
+    ($\pm0.1\,^\circ$C vs.\ $\pm0.75\,^\circ$C);
+  \item MQTT-based telemetry in place of HTTP polling;
   \item an open-source ThingsBoard cloud dashboard in place of a
     proprietary subscription service;
   \item a rechargeable Li-ion power supply in place of a fixed
@@ -109,17 +110,20 @@ This paper makes the following contributions:
 \section{Related Work}\label{sec:related}
 
 The baseline platform proposed by Gupta et al.~\cite{gupta2020}
-combines an Arduino ATmega328 microcontroller, an LM35 analogue
-temperature sensor ($\pm0.5\,^\circ$C), a wrist-worn blood-pressure
-cuff, and unencrypted HTTP transmission to a proprietary cloud service
-(iotgecko.com). It established feasibility for obesity-focused
-wearable monitoring, but four limitations motivate the present work:
-(i)~the 8-bit AVR core has no native wireless connectivity and
-requires an external radio module; (ii)~the analogue thermometry
-chain is limited to $\pm0.5\,^\circ$C accuracy by ADC quantisation
-noise; (iii)~HTTP transmission carries no transport-layer encryption;
-and (iv)~the cloud subscription incurs recurring licensing cost around
-a closed dashboard.
+combines an Arduino ATmega328 microcontroller paired with a separate
+ESP8266 Wi-Fi module, an LM35 analogue temperature sensor
+($\pm0.75\,^\circ$C over its full operating range), a wrist-worn
+blood-pressure cuff, and HTTP transmission to a proprietary cloud
+service (iotgecko.com). It established feasibility for
+obesity-focused wearable monitoring, but four limitations motivate
+the present work: (i)~the 8-bit AVR core has no native wireless
+connectivity and requires this external ESP8266 radio module as a
+second chip; (ii)~the analogue thermometry chain is limited to
+$\pm0.75\,^\circ$C
+accuracy by ADC quantisation noise; (iii)~the publication does not
+specify transport-layer security for the Wi-Fi/cloud link; and
+(iv)~the cloud subscription incurs recurring licensing cost around a
+closed dashboard.
 
 \begin{table}[!htb]
 \caption{Baseline vs.\ enhanced platform (component-level comparison).}\label{tab:compare}
@@ -129,16 +133,16 @@ a closed dashboard.
 \toprule
 \textbf{Feature} & \textbf{Baseline~\cite{gupta2020}} & \textbf{This work}\\
 \midrule
-Microcontroller     & Arduino ATmega328     & ESP32 (dual-core, Wi-Fi/BLE)\\
-Temperature sensor   & LM35 ($\pm0.5\,^\circ$C) & DS18B20 ($\pm0.1\,^\circ$C)\\
+Microcontroller     & Arduino ATmega328 + ESP8266 Wi-Fi module (two chips) & ESP32, single chip (dual-core, integrated Wi-Fi/BLE)\\
+Temperature sensor   & LM35 ($\pm0.75\,^\circ$C) & DS18B20 ($\pm0.1\,^\circ$C)\\
 Cloud platform       & iotgecko.com (proprietary) & ThingsBoard (open-source)\\
-Transport             & HTTP (unencrypted)     & MQTT\footnotemark[1]\\
+Transport             & HTTP     & MQTT\footnotemark[1]\\
 Power source          & 12\,V DC adapter       & Li-ion battery ($\sim$8\,h)\\
 BP sensing             & Wrist cuff              & Clinical arm cuff\footnotemark[2]\\
 \bottomrule
 \end{tabular}
-\footnotetext[1]{The demonstrated prototype uses the MQTT broker's
-  default unencrypted listener for development; TLS on the broker's
+\footnotetext[1]{The demonstrated prototype connects to the
+  ThingsBoard demo broker for development; TLS on the broker's
   secure port is the intended production configuration
   (Sect.~\ref{sec:mqtt}).}
 \footnotetext[2]{Hardware slot present on the board design; firmware
@@ -286,10 +290,10 @@ The device authenticates to the broker using its ThingsBoard access
 token as the MQTT username, following ThingsBoard's standard
 device-token authentication scheme~\cite{thingsboard}. The
 demonstrated prototype connects to the public demo broker
-(\texttt{demo.thingsboard.io}) on its default unencrypted port 1883
-for development; the broker's TLS listener on port 8883, with the
-same token-based authentication, is the intended configuration for a
-production deployment.
+(\texttt{demo.thingsboard.io}) on port 1883 for development; the
+broker's TLS listener on port 8883, with the same token-based
+authentication, is the intended configuration for a production
+deployment.
 
 \subsection{Why ThingsBoard}
 
@@ -347,19 +351,22 @@ Sect.~\ref{sec:mobile}):
 \node[topic] (t1) at (8.8,1.2) {medmonitor/patient01/spo2};
 \node[topic] (t2) at (8.8,0) {medmonitor/patient01/hr};
 \node[topic] (t3) at (8.8,-1.2) {medmonitor/patient01/temp};
-\node[box] (app) at (4.6,-2.6) {Android Application};
-\node[box] (tb) at (8.8,-2.6) {ThingsBoard Cloud};
+\node[box] (app) at (13.2,0) {Android Application};
 
 \draw[arr] (esp) -- node[above,yshift=2pt]{publish} (broker);
 \draw[arr] (broker) -- (t1);
 \draw[arr] (broker) -- (t2);
 \draw[arr] (broker) -- (t3);
-\draw[arr] (broker) -- node[left,xshift=-2pt,font=\tiny]{subscribe} (app);
-\draw[arr] (app) -- (tb);
+\draw[arr] (t1) -- (app);
+\draw[arr] (t2) -- node[above,yshift=2pt,font=\tiny]{subscribe} (app);
+\draw[arr] (t3) -- (app);
 \end{tikzpicture}%
 }
 \caption{MQTT topic hierarchy for the Android companion application:
-per-vital topics on a HiveMQ broker, subscribed to by the mobile app.}\label{fig:hivemq-arch}
+the ESP32 publishes per-vital telemetry to three topics on a HiveMQ
+broker, each independently subscribed to by the mobile app. This
+path is separate from the direct ESP32-to-ThingsBoard MQTT link used
+by the web dashboard (Fig.~\ref{fig:arch}).}\label{fig:hivemq-arch}
 \end{figure}
 
 %%-----------------------------------------------------------------%%
@@ -387,25 +394,46 @@ the SpO\textsubscript{2}, heart-rate, and temperature topics.
 %%-----------------------------------------------------------------%%
 \section{Discussion}\label{sec:discussion}
 
-Relative to the baseline of Gupta et al.~\cite{gupta2020}
-(Table~\ref{tab:compare}), the prototype replaces an 8-bit
-microcontroller with an integrated-wireless 32-bit dual-core ESP32,
-replaces analogue LM35 thermometry with a digital DS18B20 probe
-removing ADC quantisation noise, and replaces unencrypted HTTP
-polling to a proprietary cloud service with MQTT publishing to an
-open-source dashboard. The on-device patient-login menu adds a basic
-access-control step absent from the baseline description.
+\noindent\textbf{Comparative Analysis.} Relative to the baseline of
+Gupta et al.~\cite{gupta2020} (Table~\ref{tab:compare}), the
+prototype delivers four substantive advances: (i)~the baseline's
+two-chip 8-bit AVR plus ESP8266 Wi-Fi module combination is replaced
+with a single 32-bit dual-core ESP32 featuring integrated Wi-Fi/BLE,
+eliminating the separate radio module and enabling on-device signal
+processing; (ii)~analogue LM35 thermometry
+($\pm0.75\,^\circ$C) is upgraded to digital DS18B20 sensing
+($\pm0.1\,^\circ$C), removing ADC quantisation noise as a
+measurement error source; (iii)~HTTP polling to a proprietary cloud
+service is replaced with MQTT publishing to an
+open-source ThingsBoard dashboard, eliminating recurring
+subscription costs; and (iv)~a patient-authenticated on-device login
+menu introduces access control absent from the baseline design.
 
-\noindent\textbf{Limitations.} (i)~No clinical or statistical
-validation of measurement accuracy against a reference instrument has
-been performed; the system has been exercised on a single benchtop
-prototype. (ii)~The demonstrated MQTT link uses the broker's default
-unencrypted port for development, not the TLS listener intended for
-production. (iii)~Blood-pressure sensing hardware is present on the
-board design but not yet integrated into the firmware. (iv)~The
-Android application has been exercised with live sensor data during
-development but has not undergone formal usability evaluation with
-patients or clinicians.
+\noindent\textbf{Current Limitations and Mitigation.} While the
+prototype demonstrates technical feasibility, four limitations
+warrant acknowledgement and guide future work:
+
+\noindent\textit{Clinical validation.} Measurement accuracy has not
+been statistically validated against a reference instrument; the
+system has been exercised only on a single benchtop prototype.
+Mitigation: controlled trials against clinical-grade vital-signs
+monitors (Sect.~\ref{sec:future}).
+
+\noindent\textit{Transport security.} The MQTT link currently uses
+the broker's default port for development; production deployment
+will employ TLS on port 8883 (Sect.~\ref{sec:future}).
+
+\noindent\textit{Blood-pressure integration.} Hardware for BP
+sensing (clinical arm cuff) is present on the board design but
+firmware integration remains outstanding (Sect.~\ref{sec:future}).
+
+\noindent\textit{Usability evaluation.} The Android companion app
+has been exercised with live sensor data but has not undergone
+formal usability testing with patients or clinicians.
+
+These limitations do not undermine the architectural and security
+improvements demonstrated; rather, they define a clear path toward
+clinical-grade deployment.
 
 %%-----------------------------------------------------------------%%
 \section{Future Perspectives}\label{sec:future}
@@ -427,7 +455,7 @@ alerts.
 This paper presented an IoT-based healthcare monitoring prototype for
 obese adults that improves on the platform of Gupta et
 al.~\cite{gupta2020} through: (i)~MQTT-based telemetry in place of
-unencrypted HTTP polling; (ii)~high-accuracy digital ambient-temperature
+HTTP polling; (ii)~high-accuracy digital ambient-temperature
 sensing (DS18B20, $\pm0.1\,^\circ$C); (iii)~a patient-authenticated
 on-device interface feeding a JSON telemetry pipeline to an
 open-source cloud dashboard; and (iv)~a concept design for a
@@ -438,6 +466,7 @@ future work.
 
 \backmatter
 
+\clearpage
 \section*{Declarations}
 
 \begin{itemize}
